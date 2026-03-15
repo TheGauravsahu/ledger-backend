@@ -12,7 +12,7 @@ const app = express();
 // * MIDDLEWARES
 app.use(express.json());
 app.use(helmet());
-app.use(cookieParser);
+app.use(cookieParser());
 app.use(morgan(env.NODE_ENV));
 app.use(rateLimiter);
 

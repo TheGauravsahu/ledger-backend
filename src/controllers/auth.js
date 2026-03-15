@@ -15,12 +15,22 @@ class AuthController {
    */
   async register(req, res, next) {
     try {
-      const data = await authService.registerUser(req.body);
-      return res.cookies("token", data.token).status(201).json({
-        success: true,
-        message: "User registered successfully",
-        data,
-      });
+      const { token, user } = await authService.registerUser(req.body);
+      return res
+        .cookie("token", token)
+        .status(201)
+        .json({
+          success: true,
+          message: "User registered successfully",
+          data: {
+            token,
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        });
     } catch (e) {
       next(e);
     }
@@ -35,12 +45,23 @@ class AuthController {
    */
   async login(req, res, next) {
     try {
-      const data = await authService.loginUser(req.body);
-      return res.status(200).json({
-        success: true,
-        message: "Login successfull",
-        data,
-      });
+      const { token, user } = await authService.loginUser(req.body);
+      console.log(user)
+      return res
+        .cookie("token", token)
+        .status(200)
+        .json({
+          success: true,
+          message: "Login successfull",
+          data: {
+            token,
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+            },
+          },
+        });
     } catch (e) {
       next(e);
     }
