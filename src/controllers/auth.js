@@ -1,6 +1,5 @@
 import { authService } from "../services/auth.js";
-import { sendWelcomeEmail } from "../services/email.js";
-
+import { emailService } from "../services/email.js";
 /**
  * @name AuthController
  * @description Class for all the methods for auth controller
@@ -32,7 +31,7 @@ class AuthController {
             },
           },
         });
-      await sendWelcomeEmail(user.email, user.name);
+      await emailService.sendWelcomeEmail(user.email, user.name);
     } catch (e) {
       next(e);
     }
