@@ -20,17 +20,21 @@ class AccountService {
     return await accountModel.find({ user: userId });
   }
 
-/**
- * @name getAccountBalanceService
- * @desc Fetch balance of a account
- * @access Private
- */
-  async getAccountBalance(accountId,userId) {
-    const account = await accountModel.findOne({_id: accountId,, user:userId});
+  /**
+   * @name getAccountBalanceService
+   * @desc Fetch balance of a account
+   * @access Private
+   */
+  async getAccountBalance(accountId, userId) {
+    const account = await accountModel.findOne({
+      _id: accountId,
+      user: userId,
+    });
     if (!account) {
       throw new NotFoundError("Account not found.");
     }
-    return account.getBalance();
+    const balance = await account.getBalance();
+    return balance;
   }
 }
 
