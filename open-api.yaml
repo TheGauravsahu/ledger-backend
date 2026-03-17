@@ -1,0 +1,132 @@
+openapi: 3.0.0
+info:
+  title: Ledger Backend
+  description: Exported from Requestly API Client
+  version: 1.0.0
+paths:
+  /api/accounts:
+    post:
+      summary: Create
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+  /api/accounts/:
+    get:
+      summary: Get all accounts
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+  /api/accounts/69b952716ea800b28ccfe763/balance:
+    get:
+      summary: Get Balance
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+  /api/auth/register:
+    post:
+      summary: Register
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Successful response
+  /api/auth/login:
+    post:
+      summary: Login
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Successful response
+  /api/auth/logout:
+    post:
+      summary: Logout
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+  /api/auth/getCurrentUser:
+    get:
+      summary: getCurrentUser
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Successful response
+  /api/transactions:
+    post:
+      summary: Create Transaction
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromAccount:
+                  type: string
+                toAccount:
+                  type: string
+                amount:
+                  type: integer
+                idempotencyKey:
+                  type: string
+      responses:
+        "200":
+          description: Successful response
+    get:
+      summary: Get All
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+  /api/transactions/system/initial-funds/:
+    post:
+      summary: Create Initial Fund By System User
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toAccount:
+                  type: string
+                amount:
+                  type: integer
+                idempotencyKey:
+                  type: string
+      responses:
+        "200":
+          description: Successful response
+  /health:
+    get:
+      summary: Health Endpoint
+      description: ""
+      responses:
+        "200":
+          description: Successful response
+servers:
+  - url: http://localhost:3000
