@@ -5,7 +5,8 @@ import morgan from "morgan";
 import env from "./config/env.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { rateLimiter } from "./middlewares/rateLimit.js";
-import authRouter from "./routes/auth.js"
+import authRouter from "./routes/auth.js";
+import accountRouter from "./routes/account.js";
 
 const app = express();
 
@@ -25,7 +26,8 @@ app.get("/health", (req, res) => {
 });
 
 // * ROUTES
-app.use("/api/auth",authRouter)
+app.use("/api/auth", authRouter);
+app.use("/api/accounts", accountRouter);
 
 app.use(errorHandler);
 

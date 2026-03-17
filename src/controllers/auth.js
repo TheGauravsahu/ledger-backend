@@ -1,4 +1,5 @@
 import { authService } from "../services/auth.js";
+import { sendWelcomeEmail } from "../services/email.js";
 
 /**
  * @name AuthController
@@ -16,7 +17,7 @@ class AuthController {
   async register(req, res, next) {
     try {
       const { token, user } = await authService.registerUser(req.body);
-      return res
+      res
         .cookie("token", token)
         .status(201)
         .json({
@@ -31,6 +32,7 @@ class AuthController {
             },
           },
         });
+      await sendWelcomeEmail(user.email, user.name);
     } catch (e) {
       next(e);
     }
@@ -46,7 +48,6 @@ class AuthController {
   async login(req, res, next) {
     try {
       const { token, user } = await authService.loginUser(req.body);
-      console.log(user)
       return res
         .cookie("token", token)
         .status(200)
