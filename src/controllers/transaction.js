@@ -10,7 +10,10 @@ class TransactionController {
    */
   async createTransaction(req, res, next) {
     try {
-      const { data, message } = await transactionService.create(req.body);
+      const { data, message } = await transactionService.create(
+        req.body,
+        req.user._id,
+      );
       res.status(201).json({
         success: true,
         message: message || "Transaction created successfully",
@@ -28,12 +31,12 @@ class TransactionController {
     }
   }
 
-      /**
-     * @name createIntialFundTransactionControllers
-     * @description Create a intial fund transaction from system user
-     * @route POST /api/transactions/system/initial-funds
-     * @access Private
-     */
+  /**
+   * @name createIntialFundTransactionControllers
+   * @description Create a intial fund transaction from system user
+   * @route POST /api/transactions/system/initial-funds
+   * @access Private
+   */
   async createIntialFundTransaction(req, res, next) {
     try {
       const { data, message } =

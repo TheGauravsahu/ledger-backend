@@ -31,25 +31,25 @@ export const createIntialFundTransactionValidator = [
     .trim(),
 ];
 
-export const checkIdempotencyKeyValidator = (status) => {
-  if (status === "COMPLETED") {
+export const checkIdempotencyKeyValidator = (existingTransaction) => {
+  if (existingTransaction.status === "COMPLETED") {
     return {
       data: existingTransaction,
       message: "Transaction already completed",
     };
   }
-  if (status === "PENDING") {
+  if (existingTransaction.status === "PENDING") {
     return {
       data: null,
       message: "Transaction is still pending. Please wait.",
     };
   }
-  if (status === "FAILED") {
+  if (existingTransaction.status === "FAILED") {
     throw new BadRequestError(
       "Previous transaction attempt failed. Please try again.",
     );
   }
-  if (status === "REVERSED") {
+  if (existingTransaction.status === "REVERSED") {
     throw new BadRequestError(
       "Previous transaction attempt was reversed. Please try again.",
     );

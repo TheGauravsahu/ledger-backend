@@ -1,7 +1,11 @@
 import { transactionModel } from "../models/transaction.js";
 import { ledgerModel } from "../models/ledger.js";
 import { accountModel } from "../models/account.js";
-import { BadRequestError, NotFoundError } from "../utils/errors.js";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../utils/errors.js";
 import mongoose from "mongoose";
 import { checkIdempotencyKeyValidator } from "../validators/transaction.js";
 
@@ -12,7 +16,7 @@ class TransactionService {
    * @route POST /api/transactions
    * @access Private
    */
-  async create({ fromAccount, toAccount, amount, idempotencyKey }) {
+  async create({ fromAccount, toAccount, amount, idempotencyKey }, userId) {
     const [fromUserAccount, toUserAccount] = await Promise.all([
       accountModel.findById(fromAccount),
       accountModel.findById(toAccount),
@@ -21,13 +25,18 @@ class TransactionService {
       throw new NotFoundError("Invalid fromAccount or toAccount not found");
     }
 
+    if (fromUserAccount.user.toString() !== userId.toString()) {
+      throw new ForbiddenError(
+        "You can't transfer amount from someone else's account.",
+      );
+    }
+
     // Check for idempotency key to prevent duplicate transactions
     const existingTransaction = await transactionModel.findOne({
       idempotencyKey,
     });
-
     if (existingTransaction) {
-      checkIdempotencyKeyValidator(existingTransaction.status);
+     return checkIdempotencyKeyValidator(existingTransaction);
     }
 
     //  check if both accounts are active
@@ -46,8 +55,6 @@ class TransactionService {
       throw new BadRequestError(
         `Insufficient balance in fromAccount. Current balance is ${fromAccountBalance}`,
       );
-    } else if (amount <= 0) {
-      throw new BadRequestError("Amount must be greater than zero");
     }
 
     // Create transaction with PENDING status
@@ -62,30 +69,29 @@ class TransactionService {
     });
 
     // crewate ledger entries for debit and credit
-    const [debitLedgerEntry, creditLedgerEntry] = await Promise.all([
-      ledgerModel.create(
-        [
-          {
-            account: fromAccount,
-            transaction: transaction._id,
-            type: "DEBIT",
-            amount,
-          },
-        ],
-        { session },
-      ),
-      ledgerModel.create(
-        [
-          {
-            account: toAccount,
-            transaction: transaction._id,
-            type: "CREDIT",
-            amount,
-          },
-        ],
-        { session },
-      ),
-    ]);
+    const debitLedgerEntry = await ledgerModel.create(
+      [
+        {
+          account: fromAccount,
+          transaction: transaction._id,
+          type: "DEBIT",
+          amount,
+        },
+      ],
+      { session },
+    );
+
+    const creditLedgerEntry = await ledgerModel.create(
+      [
+        {
+          account: toAccount,
+          transaction: transaction._id,
+          type: "CREDIT",
+          amount,
+        },
+      ],
+      { session },
+    );
 
     transaction.status = "COMPLETED";
     await transaction.save({ session });
@@ -117,7 +123,7 @@ class TransactionService {
       idempotencyKey,
     });
     if (existingTransaction) {
-     return checkIdempotencyKeyValidator(existingTransaction.status);
+      return checkIdempotencyKeyValidator(existingTransaction);
     }
 
     //  check if account is active
@@ -146,30 +152,29 @@ class TransactionService {
     });
 
     // crewate ledger entry for credit
-    const [creditLedgerEntry, debitLedgerEntry] = await Promise.all([
-      ledgerModel.create(
-        [
-          {
-            account: toAccount,
-            transaction: transaction._id,
-            type: "CREDIT",
-            amount,
-          },
-        ],
-        { session },
-      ),
-      ledgerModel.create(
-        [
-          {
-            account: fromUserAccount._id,
-            transaction: transaction._id,
-            type: "DEBIT",
-            amount,
-          },
-        ],
-        { session },
-      ),
-    ]);
+    const creditLedgerEntry = await ledgerModel.create(
+      [
+        {
+          account: toAccount,
+          transaction: transaction._id,
+          type: "CREDIT",
+          amount,
+        },
+      ],
+      { session },
+    );
+
+    const debitLedgerEntry = await ledgerModel.create(
+      [
+        {
+          account: fromUserAccount._id,
+          transaction: transaction._id,
+          type: "DEBIT",
+          amount,
+        },
+      ],
+      { session },
+    );
 
     transaction.status = "COMPLETED";
     await transaction.save({ session });
