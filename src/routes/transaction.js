@@ -1,5 +1,8 @@
 import express from "express";
-import { createTransactionValidator,createIntialFundTransactionValidator } from "../validators/transaction.js";
+import {
+  createTransactionValidator,
+  createIntialFundTransactionValidator,
+} from "../validators/transaction.js";
 import { transactionController } from "../controllers/transaction.js";
 import { authSystemUser, authUser } from "../middlewares/auth.js";
 
@@ -31,6 +34,12 @@ r.post(
   transactionController.createIntialFundTransaction,
 );
 
-
+/**
+ * @name getAllUsersTransactions
+ * @description Fetches all the transactions of current logged-in user
+ * @route GET /api/transactions
+ * @access Private
+ */
+r.get("/", authUser, transactionController.getAllUsersTransactions);
 
 export default r;

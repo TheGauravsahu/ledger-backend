@@ -1,6 +1,7 @@
 import express from "express";
 import { loginValidator, registerValidator } from "../validators/auth.js";
 import { authController } from "../controllers/auth.js";
+import { authUser } from "../middlewares/auth.js";
 
 const r = express.Router();
 
@@ -19,5 +20,21 @@ r.post("/register", registerValidator, authController.register);
  * @body { email, password }
  */
 r.post("/login", loginValidator, authController.login);
+
+/**
+ * @name logoutUser
+ * @route POST /api/auth/logout
+ * @desc Logout user and blaclist token
+ * @access Public
+ */
+r.post("/logout", authController.logout);
+
+/**
+ * @name getCurrentUser
+ * @route POST /api/auth/getCurrentUser
+ * @description Get the data of current logged in user
+ * @access Private
+ */
+r.get("/getCurrentUser", authUser, authController.getCurrentUser);
 
 export default r;

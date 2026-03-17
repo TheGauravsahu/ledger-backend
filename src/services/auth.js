@@ -2,6 +2,7 @@ import env from "../config/env.js";
 import { BadRequestError } from "../utils/errors.js";
 import jwt from "jsonwebtoken";
 import { userModel } from "../models/user.js";
+import { blacklistTokenModel } from "../models/blacklist.js";
 
 class AuthService {
   /**
@@ -39,6 +40,29 @@ class AuthService {
       expiresIn: "3d",
     });
     return { token, user };
+  }
+
+  /**
+   * @name logoutUserService
+   * @description blacklists user token
+   * @access Public
+   */
+  async logoutUser(token) {
+    await blacklistTokenModel.create({ token });
+  }
+
+  /**
+   * @name getCurrentUserService
+   * @description Get the data of current logged in user by id
+   * @access Private
+   */
+  async getCurrentUser(userId) {
+    const user = await userModel.findOne({ _id: userId });
+    return {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
   }
 }
 

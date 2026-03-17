@@ -67,8 +67,8 @@ class EmailService {
    */
   async sendTransactionEmail(fromAccount, toAccount, amount, email, name) {
     const subject = "Transaction Successful!";
-    const text = `Hi ${name},\n\nYour transaction of $${amount} from account ${fromAccount} to account ${toAccount} was successful. If you have any questions or need assistance, feel free to reach out.\n\nBest regards,\nThe Backend Ledger Team`;
-    const html = `<p>Hi ${name},</p><p>Your transaction of $${amount} from account ${fromAccount} to account ${toAccount} was successful. If you have any questions or need assistance, feel free to reach out.</p><p>Best regards,<br>The Backend Ledger Team</p>`;
+    const text = `Hi ${name},\n\nYour transaction of Rs.${amount} from account ${fromAccount} to account ${toAccount} was successful. If you have any questions or need assistance, feel free to reach out.\n\nBest regards,\nThe Backend Ledger Team`;
+    const html = `<p>Hi ${name},</p><p>Your transaction of Rs.${amount} from account ${fromAccount} to account ${toAccount} was successful. If you have any questions or need assistance, feel free to reach out.</p><p>Best regards,<br>The Backend Ledger Team</p>`;
 
     await sendEmail(email, subject, text, html);
   }

@@ -7,7 +7,7 @@ import { emailService } from "../services/email.js";
  */
 class AuthController {
   /**
-   * @name registerUser
+   * @name registerUserController
    * @route POST /api/auth/register
    * @desc Register a new user
    * @access Public
@@ -38,7 +38,7 @@ class AuthController {
   }
 
   /**
-   * @name loginUser
+   * @name loginUserContoller
    * @route POST /api/auth/login
    * @desc Login  user and returns JWT
    * @access Public
@@ -62,6 +62,55 @@ class AuthController {
             },
           },
         });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * @name logoutUserController
+   * @route POST /api/auth/logout
+   * @desc Logout user and blaclist token
+   * @access Public
+   */
+  async logout(req, res, next) {
+    try {
+      const token =
+        req.cookies.token || req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(200).json({
+          success: true,
+          message: "Logged out successfully",
+        });
+      }
+
+      await authService.logoutUser(token);
+      
+      res.clearCookie("token");
+      return res.status(200).json({
+        success: true,
+        message: "Logged out succesfully.",
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * @name getCurrentUserController
+   * @route POST /api/auth/getCurrentUser
+   * @description Get the data of current logged in user
+   * @access Private
+   */
+  async getCurrentUser(req, res, next) {
+    try {
+      const data = await authService.getCurrentUser(req.user._id);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Successfully fetched current user.",
+        data,
+      });
     } catch (e) {
       next(e);
     }

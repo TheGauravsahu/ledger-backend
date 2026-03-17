@@ -53,6 +53,27 @@ class TransactionController {
       next(e);
     }
   }
+
+  /**
+   * @name getAllUsersTransactionsController
+   * @description Fetches all the transactions of current logged-in user
+   * @route GET /api/transactions
+   * @access Private
+   */
+  async getAllUsersTransactions(req, res, next) {
+    try {
+      const data = await transactionService.getAllUsersTransactions(
+        req.user._id,
+      );
+      return res.status(200).json({
+        success: true,
+        message: "Fetched all the transactions",
+        data,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export const transactionController = new TransactionController();

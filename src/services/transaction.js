@@ -36,7 +36,7 @@ class TransactionService {
       idempotencyKey,
     });
     if (existingTransaction) {
-     return checkIdempotencyKeyValidator(existingTransaction);
+      return checkIdempotencyKeyValidator(existingTransaction);
     }
 
     //  check if both accounts are active
@@ -57,50 +57,65 @@ class TransactionService {
       );
     }
 
-    // Create transaction with PENDING status
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    const transaction = new transactionModel({
-      fromAccount,
-      toAccount,
-      amount,
-      idempotencyKey,
-      status: "PENDING",
-    });
+    try {
+      // Create transaction with PENDING status
+      const session = await mongoose.startSession();
+      session.startTransaction();
+      const [transaction] = await transactionModel.create(
+        [
+          {
+            fromAccount,
+            toAccount,
+            amount,
+            idempotencyKey,
+            status: "PENDING",
+          },
+        ],
+        { session },
+      );
 
-    // crewate ledger entries for debit and credit
-    const debitLedgerEntry = await ledgerModel.create(
-      [
-        {
-          account: fromAccount,
-          transaction: transaction._id,
-          type: "DEBIT",
-          amount,
-        },
-      ],
-      { session },
-    );
+      // crewate ledger entries for debit and credit
+      const debitLedgerEntry = await ledgerModel.create(
+        [
+          {
+            account: fromAccount,
+            transaction: transaction._id,
+            type: "DEBIT",
+            amount,
+          },
+        ],
+        { session },
+      );
 
-    const creditLedgerEntry = await ledgerModel.create(
-      [
-        {
-          account: toAccount,
-          transaction: transaction._id,
-          type: "CREDIT",
-          amount,
-        },
-      ],
-      { session },
-    );
+      const creditLedgerEntry = await ledgerModel.create(
+        [
+          {
+            account: toAccount,
+            transaction: transaction._id,
+            type: "CREDIT",
+            amount,
+          },
+        ],
+        { session },
+      );
 
-    transaction.status = "COMPLETED";
-    await transaction.save({ session });
-    await session.commitTransaction();
-    session.endSession();
-    return {
-      data: transaction,
-      message: "Transaction completed successfully",
-    };
+      const data = await transactionModel.findOneAndUpdate(
+        { _id: transaction._id },
+        { status: "COMPLETED" },
+        { new: true, session },
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+      return {
+        data,
+        message: "Transaction completed successfully",
+      };
+    } catch (e) {
+      throw new BadRequestError(
+        "Transaction is pending due to some issues, Please try again later.",
+      );
+    }
   }
 
   /**
@@ -184,6 +199,24 @@ class TransactionService {
       data: transaction,
       message: "Initial fund transaction completed successfully",
     };
+  }
+
+  /**
+   * @name getAllUsersTransactionsService
+   * @description Fetches all the transactions of current logged-in user
+   * @route GET /api/transactions
+   * @access Private
+   */
+  async getAllUsersTransactions(userId) {
+    const accounts = await accountModel.find({ user: userId }).select("_id");
+    const accountIds = accounts.map((acc) => acc._id);
+
+    return await transactionModel.find({
+      $or: [
+        { fromAccount: { $in: accountIds } },
+        { toAccount: { $in: accountIds } },
+      ],
+    });
   }
 }
 
