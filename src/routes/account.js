@@ -11,4 +11,21 @@ const r = express.Router();
  */
 r.post("/", authUser, accountController.createAccount);
 
+/**
+ * @name getAllAccounts
+ * @description Fetch all accounts of current logged-in user
+ * @route GET /api/accoutns/
+ * @access Private
+ */
+r.get("/", authUser, accountController.getAllAccounts);
+
+/**
+ * @name getAccountBalance
+ * @description Fetch balance of a account
+ * @route GET /api/accoutns/:accountId/balance
+ * @access Private
+ */
+r.get("/:accountId/balance", authUser, accountController.getAccountBalance);
+
+
 export default r;
